@@ -2,10 +2,15 @@ import os
 
 from quart import Blueprint, request
 from app.core.config import Config
+from app.core.session import get_db
 from app.services.stream_service import StreamService
+from quart_schema import validate_querystring, validate_request, validate_response, tag
+
+from app.utils.stream_utils import CreateStreamRequest
 
 API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
 stream_bp = Blueprint("stream", __name__, url_prefix=f"{API_PREFIX}/cameras")
+
 
 class StreamController:
 
@@ -15,7 +20,7 @@ class StreamController:
             __name__,
             url_prefix=f"{Config.API_PREFIX}/stream",
         )
-        
+
         self.register_routes()
 
     def register_routes(self):
@@ -50,9 +55,18 @@ class StreamController:
             methods=["DELETE"],
         )
 
-    async def create_stream(self):
-        data = await request.get_json()
-        return await self.service.create_stream(data)
+    @tag(["Stream"])
+    @validate_request(CreateStreamRequest)
+    async def create_stream(self, stream_data: CreateStreamRequest):
+        """
+        Create streams
+        """
+        async with get_db() as db:
+            service = StreamService(db)
+
+        response, status_code = await service.create_stream(stream_data)
+
+        return response, status_code
 
     async def get_all_streams(self):
         return await self.service.get_all_streams()
@@ -67,7 +81,7 @@ class StreamController:
 
     async def delete_stream(self, uniq_code):
         return await self.service.delete_stream(uniq_code)
-    
+
     @classmethod
     def blueprint(cls):
 
