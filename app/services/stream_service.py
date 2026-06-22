@@ -8,7 +8,7 @@ class StreamService:
 
     async def create_stream(self, data):
 
-        existing = await self.repo.find_by_stream_url(data["streamUrl"])
+        existing = await self.repo.find_by_stream_name(data["streamName"])
 
         if existing:
             return (
@@ -23,7 +23,13 @@ class StreamService:
         return (
             success_response(
                 "Stream created successfully.",
-                stream.to_dict(),
+                {
+                    "streamName": stream.get("stream_name"),
+                    "fps": stream.get("fps"),
+                    "uniqCode": uniq_code,
+                    "resolution": stream.get("resolution"),
+                    "status": stream.get("status")
+                },
             ),
             201,
         )

@@ -6,6 +6,7 @@ from app.core.session import get_db
 from app.services.stream_service import StreamService
 from quart_schema import validate_querystring, validate_request, validate_response, tag
 
+from app.utils.file_upload import upload_video
 from app.utils.stream_utils import CreateStreamRequest
 
 API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
@@ -26,7 +27,7 @@ class StreamController:
     def register_routes(self):
 
         self.bp.add_url_rule(
-            "",
+            "/add",
             view_func=self.create_stream,
             methods=["POST"],
         )
@@ -55,6 +56,10 @@ class StreamController:
             methods=["DELETE"],
         )
 
+        self.bp.add_url_rule(
+            "/upload", view_func=self.upload_video_for_streaming, methods=["POST"]
+        )
+
     @tag(["Stream"])
     @validate_request(CreateStreamRequest)
     async def create_stream(self, stream_data: CreateStreamRequest):
@@ -81,6 +86,27 @@ class StreamController:
 
     async def delete_stream(self, uniq_code):
         return await self.service.delete_stream(uniq_code)
+
+    @tag(["Stream"])
+    async def upload_video_for_streaming(self):
+        # Read uploaded files
+        files = await request.files
+        file = files["file"]
+        try:
+            file_path = await upload_video(file)
+
+            return {
+                "success": True,
+                "message": "Video uploaded successfully.",
+                "path": file_path,
+            }, 200
+
+        except Exception as ex:
+            import traceback
+
+            traceback.print_exc()
+
+            return {"success": False, "message": str(ex)}, 500
 
     @classmethod
     def blueprint(cls):

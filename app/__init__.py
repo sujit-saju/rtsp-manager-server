@@ -20,6 +20,7 @@ def create_app() -> Quart:
 
     app = Quart(__name__)
 
+    app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
     # ---------------------------------------
     # Swagger
     # ---------------------------------------

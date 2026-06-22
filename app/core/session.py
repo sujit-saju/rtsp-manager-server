@@ -10,7 +10,7 @@
 
 from contextlib import asynccontextmanager
 
-from app.database import SessionLocal
+from app.database import AsyncSessionLocal
 
 
 @asynccontextmanager
@@ -29,7 +29,7 @@ async def get_db():
             result = await db.execute(...)
     """
 
-    async with SessionLocal() as session:
+    async with AsyncSessionLocal() as session:
         try:
             yield session
             await session.commit()

@@ -35,7 +35,7 @@ class Stream(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Unique stream identifier
-    stream_code = Column(String(20), unique=True, nullable=False, index=True)
+    uniq_code = Column(String(20), unique=True, nullable=False, index=True)
 
     # User defined name
     stream_name = Column(String(100), nullable=False)
@@ -46,12 +46,6 @@ class Stream(Base):
         nullable=False,
         default=StreamSourceType.FILE,
     )
-
-    # Original uploaded file
-    original_filename = Column(String(255))
-
-    # Stored filename
-    stored_filename = Column(String(255))
 
     # Absolute/local storage path
     file_path = Column(String(500))
