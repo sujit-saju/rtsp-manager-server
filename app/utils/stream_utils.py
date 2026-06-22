@@ -3,8 +3,9 @@ from dataclasses import dataclass
 
 @dataclass
 class CreateStreamRequest:
-    stream_name : str
-    file_path : str
-    fps : str
+    streamName : str
+    filePath : str
+    fps : int
     resolution : str
-    status : str
+    status : bool
+    loopEnabled : bool

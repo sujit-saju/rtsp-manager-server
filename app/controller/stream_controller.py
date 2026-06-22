@@ -62,14 +62,14 @@ class StreamController:
 
     @tag(["Stream"])
     @validate_request(CreateStreamRequest)
-    async def create_stream(self, stream_data: CreateStreamRequest):
+    async def create_stream(self, data: CreateStreamRequest):
         """
         Create streams
         """
         async with get_db() as db:
             service = StreamService(db)
 
-        response, status_code = await service.create_stream(stream_data)
+        response, status_code = await service.create_stream(data)
 
         return response, status_code
 

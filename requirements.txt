@@ -5,3 +5,4 @@ aiosqlite
 python-dotenv
 hypercorn
 quart-schema
+pydantic

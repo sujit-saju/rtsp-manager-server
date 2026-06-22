@@ -33,7 +33,7 @@ class SequenceNumber(Base):
 
     __tablename__ = "tbl_seq_number"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
     entity_type = Column(String(100), unique=True, nullable=False)
 
