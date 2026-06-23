@@ -6,3 +6,4 @@ python-dotenv
 hypercorn
 quart-schema
 pydantic
+opencv-python

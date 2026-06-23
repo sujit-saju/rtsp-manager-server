@@ -29,3 +29,12 @@ class StreamRepository(BaseRepository):
         await self.db.refresh(stream_obj)
 
         return stream_obj
+    
+    async def get_all_streams(
+        self
+    ):
+        query = select(Stream).order_by(Stream.id.desc())
+
+        result = await self.db.execute(query)
+
+        return result.scalars().all()

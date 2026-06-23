@@ -1,3 +1,4 @@
+from asyncio import streams
 import os
 
 from quart import Blueprint, request
@@ -33,7 +34,7 @@ class StreamController:
         )
 
         self.bp.add_url_rule(
-            "",
+            "/list",
             view_func=self.get_all_streams,
             methods=["GET"],
         )
@@ -73,8 +74,17 @@ class StreamController:
 
         return response, status_code
 
+    @tag(["Stream"])
     async def get_all_streams(self):
-        return await self.service.get_all_streams()
+        """
+        List All streams
+        """
+        async with get_db() as db:
+            service = StreamService(db)
+
+        response, status_code = await service.list_all_streams()
+
+        return response, status_code
 
     async def get_stream(self, uniq_code):
         return await self.service.get_stream(uniq_code)

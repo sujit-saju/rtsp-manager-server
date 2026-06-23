@@ -24,6 +24,8 @@ class Stream(Base):
 
     # Absolute/local storage path
     file_path = Column(String(500))
+    
+    snapshot_path = Column(String(500))
 
     # Stream configuration
     fps = Column(Integer, default=15)

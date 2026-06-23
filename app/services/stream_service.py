@@ -31,6 +31,7 @@ class StreamService:
             resolution=data.resolution,
             loop_enabled=data.loopEnabled,
             status=data.status,
+            snapshot_path=data.snapshotPath,
         )
 
         stream = await self.stream_repo.create(new_stream)
@@ -45,22 +46,37 @@ class StreamService:
                     "resolution": stream.resolution,
                     "status": stream.status,
                     "loopEnabled": stream.loop_enabled,
+                    "snapshotPath": stream.snapshot_path,
                 },
             ),
             201,
         )
 
-    # async def get_all_streams(self):
+    async def list_all_streams(self):
+        stream_list = await self.stream_repo.get_all_streams()
 
-    #     streams = await self.stream_repo.find_all()
+        stream_data = [
+            {
+                "id": stream.id,
+                "uniqCode": stream.uniq_code,
+                "streamName": stream.stream_name,
+                "filePath": stream.file_path,
+                "fps": stream.fps,
+                "resolution": stream.resolution,
+                "loopEnabled": stream.loop_enabled,
+                "status": stream.status,
+                "snapshotPath": stream.snapshot_path,
+            }
+            for stream in stream_list
+        ]
 
-    #     return (
-    #         success_response(
-    #             "Streams fetched successfully.",
-    #             [s.to_dict() for s in streams],
-    #         ),
-    #         200,
-    #     )
+        return (
+            success_response(
+                "List of streams retrieved successfully.",
+                stream_data,
+            ),
+            200,
+        )
 
     # async def get_stream(self, uniq_code):
 

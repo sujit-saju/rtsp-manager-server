@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class CreateStreamRequest:
     streamName : str
     filePath : str
+    snapshotPath : str
     fps : int
     resolution : str
     status : bool
