@@ -3,6 +3,9 @@ from app.repositories.stream_repository import StreamRepository
 from app.utils.response import success_response, error_response
 from app.services.unique_code_service import UniqueCodeService
 
+import threading
+
+from app.utils.stream_manager import get_rtsp_url, starting_streaming
 
 class StreamService:
 
@@ -36,17 +39,21 @@ class StreamService:
 
         stream = await self.stream_repo.create(new_stream)
 
+        # After stream is saved:
+        rtsp_url = starting_streaming(stream)
+        
         return (
             success_response(
                 "Stream created successfully.",
                 {
                     "streamName": stream.stream_name,
                     "fps": stream.fps,
-                    "uniqCode": stream.uniq_code,
+                    "uniqCode": uniq_code,
                     "resolution": stream.resolution,
                     "status": stream.status,
                     "loopEnabled": stream.loop_enabled,
                     "snapshotPath": stream.snapshot_path,
+                    "rtspUrl": rtsp_url
                 },
             ),
             201,
@@ -66,6 +73,7 @@ class StreamService:
                 "loopEnabled": stream.loop_enabled,
                 "status": stream.status,
                 "snapshotPath": stream.snapshot_path,
+                "rtspUrl": get_rtsp_url(stream.uniq_code),  # ← derived from uniq_code
             }
             for stream in stream_list
         ]

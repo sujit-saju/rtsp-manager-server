@@ -7,13 +7,14 @@
 import os
 
 from app.controller import register_all
-from quart import Quart
+from quart import Quart, send_from_directory
 from quart_cors import cors
 from quart_schema import QuartSchema
 
 from app.core.config import Config
 from app.database import engine, Base
 from app.core.logger import logger
+from app.utils.stream_manager import check_dependencies
 
 
 def create_app() -> Quart:
@@ -64,6 +65,9 @@ def create_app() -> Quart:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
+        check_dependencies()
+        logger.info("FFmpeg and MediaMTX verified.")
+
         logger.info("Database ready.")
 
     # ---------------------------------------
@@ -79,6 +83,15 @@ def create_app() -> Quart:
 
         logger.info("Database engine closed.")
 
+        # ---------------------------------------
+    # Static file serving for uploads
+    # ---------------------------------------
+
+    @app.route("/api/v1/uploads/<path:filename>")
+    async def serve_uploads(filename):
+        uploads_dir = os.path.abspath("uploads")
+        return await send_from_directory(uploads_dir, filename)
+    
     # ---------------------------------------
     # Blueprints
     # ---------------------------------------

@@ -8,6 +8,7 @@ from app.services.stream_service import StreamService
 from quart_schema import validate_querystring, validate_request, validate_response, tag
 
 from app.utils.file_upload import upload_video
+from app.utils.response import error_response
 from app.utils.stream_utils import CreateStreamRequest
 
 API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
@@ -61,12 +62,58 @@ class StreamController:
             "/upload", view_func=self.upload_video_for_streaming, methods=["POST"]
         )
 
+    # @tag(["Stream"])
+    # @validate_request(CreateStreamRequest)
+    # async def create_stream(self, data: CreateStreamRequest):
+    #     """
+    #     Create streams
+    #     """
+    #     async with get_db() as db:
+    #         service = StreamService(db)
+
+    #     response, status_code = await service.create_stream(data)
+
+    #     return response, status_code
+
     @tag(["Stream"])
-    @validate_request(CreateStreamRequest)
-    async def create_stream(self, data: CreateStreamRequest):
+    async def create_stream(self):
         """
         Create streams
         """
+        files = await request.files
+        form = await request.form
+
+        file = files.get("file")
+
+        if not file:
+            return error_response("No video file provided."), 400
+
+        # Validate size
+        content = file.read()
+        if len(content) > 50 * 1024 * 1024:
+            return error_response("File exceeds 50 MB limit."), 413
+        file.stream.seek(0)
+
+        # Upload video + generate snapshot
+        try:
+            upload_result = await upload_video(file)
+        except ValueError as e:
+            return error_response(str(e)), 400
+
+        # Manually build the dataclass
+        try:
+            data = CreateStreamRequest(
+                streamName=form.get("streamName", ""),
+                filePath=upload_result["video_path"],
+                snapshotPath=upload_result["snapshot_path"] or "",
+                fps=int(form.get("fps", 30)),
+                resolution=form.get("resolution", ""),
+                status=form.get("status", "true") == "true",
+                loopEnabled=form.get("loopEnabled", "false") == "true",
+            )
+        except (ValueError, TypeError) as e:
+            return error_response(f"Invalid request data: {str(e)}"), 422
+
         async with get_db() as db:
             service = StreamService(db)
 

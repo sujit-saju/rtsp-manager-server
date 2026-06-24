@@ -1,0 +1,9 @@
+logLevel: error
+rtspAddress: :8554
+rtmp: no
+hls: no
+webrtc: no
+srt: no
+paths:
+  ~^.*$:
+    source: publisher
