@@ -53,7 +53,7 @@ class StreamController:
         )
 
         self.bp.add_url_rule(
-            "/<string:uniq_code>",
+            "/delete",
             view_func=self.delete_stream,
             methods=["DELETE"],
         )
@@ -133,16 +133,30 @@ class StreamController:
 
         return response, status_code
 
+    @tag(["Stream"])
     async def get_stream(self, uniq_code):
         return await self.service.get_stream(uniq_code)
 
+    @tag(["Stream"])
     async def update_stream(self, uniq_code):
         data = await request.get_json()
         data["uniqCode"] = uniq_code
         return await self.service.update_stream(data)
 
-    async def delete_stream(self, uniq_code):
-        return await self.service.delete_stream(uniq_code)
+    @tag(["Stream"])
+    async def delete_stream(self):
+        """
+        Delete a stream by its unique code
+        """
+
+        uniq_code = request.args.get("uniq_code")
+
+        async with get_db() as db:
+            service = StreamService(db)
+
+        response, status_code = await service.delete_stream(uniq_code)
+
+        return response, status_code
 
     @tag(["Stream"])
     async def upload_video_for_streaming(self):

@@ -1,9 +1,9 @@
+from pathlib import Path
+
 from app.models.stream_entity import Stream
 from app.repositories.stream_repository import StreamRepository
 from app.utils.response import success_response, error_response
 from app.services.unique_code_service import UniqueCodeService
-
-import threading
 
 from app.utils.stream_manager import get_rtsp_url, starting_streaming
 
@@ -85,6 +85,43 @@ class StreamService:
             ),
             200,
         )
+    
+    # DELETE THE STREAM
+    async def delete_stream(self, uniq_code):
+
+        existing_stream = await self.stream_repo.get_stream_by_uniq_code(uniq_code)
+
+        # print("FOUND STREAM =", existing_stream)
+
+        if not existing_stream:
+            return (
+                error_response("Stream doesn't exist"),
+                404,
+            )
+
+        try:
+            # If filePath is stored in DB
+            if existing_stream.file_path:
+                video_path = Path(existing_stream.file_path)
+
+                if video_path.exists():
+                    video_path.unlink()
+
+            await self.stream_repo.delete_by_uniq_code(existing_stream.uniq_code)
+
+            return (
+                success_response(
+                    "Stream deleted successfully.",
+                    {"uniqCode": existing_stream.uniq_code},
+                ),
+                200,
+            )
+
+        except Exception as e:
+            return (
+                error_response(f"Database transaction failed: {str(e)}"),
+                500,
+            )
 
     # async def get_stream(self, uniq_code):
 
@@ -121,22 +158,5 @@ class StreamService:
     #             "Stream updated successfully.",
     #             updated.to_dict(),
     #         ),
-    #         200,
-    #     )
-
-    # async def delete_stream(self, uniq_code):
-
-    #     stream = await self.stream_repo.find_by_uniq_code(uniq_code)
-
-    #     if not stream:
-    #         return (
-    #             error_response("Stream not found."),
-    #             404,
-    #         )
-
-    #     await self.stream_repo.delete(stream)
-
-    #     return (
-    #         success_response("Stream deleted successfully."),
     #         200,
     #     )

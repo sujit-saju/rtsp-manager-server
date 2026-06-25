@@ -38,3 +38,22 @@ class StreamRepository(BaseRepository):
         result = await self.db.execute(query)
 
         return result.scalars().all()
+
+    async def get_stream_by_uniq_code(self, uniq_code: str):
+        result = await self.db.execute(
+            select(Stream).where(Stream.uniq_code == uniq_code)
+        )
+        return result.scalars().first()
+    
+    async def delete_by_uniq_code(self, uniq_code: str):
+        result = await self.db.execute(
+            select(Stream).where(Stream.uniq_code == uniq_code)
+        )
+
+        obj = result.scalars().first()
+
+        if obj:
+            await self.db.delete(obj)
+            await self.db.commit()
+
+        return obj

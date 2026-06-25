@@ -2,19 +2,34 @@
 
 import os
 import json
+from pathlib import Path
+import platform
 import time
 import threading
 import subprocess
 
 FFMPEG_BIN = os.getenv("FFMPEG_BIN", "ffmpeg")
-MEDIAMTX_BIN = os.getenv("MEDIAMTX_BIN", "./mediamtx.exe")
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+system = platform.system().lower()
+
+if system == "windows":
+    MEDIAMTX_BIN = BASE_DIR / "bin" / "windows" / "mediamtx.exe"
+elif system == "linux":
+    MEDIAMTX_BIN = BASE_DIR / "bin" / "linux" / "mediamtx"
+else:
+    raise RuntimeError(f"Unsupported OS: {system}")
+
+MEDIAMTX_CONFIG_PATH = BASE_DIR / "config" / "mediamtx.yml"
+
 MEDIAMTX_HOST = os.getenv("RTSP_HOST", "192.168.0.234")
 RTSP_PORT = int(os.getenv("RTSP_PORT", "8554"))
 
 # Config file written next to mediamtx.exe
-MEDIAMTX_CONFIG_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(MEDIAMTX_BIN)), "mediamtx_config.yml"
-)
+# MEDIAMTX_CONFIG_PATH = os.path.join(
+#     os.path.dirname(os.path.abspath(MEDIAMTX_BIN)), "mediamtx_config.yml"
+# )
 
 FFPROBE_BIN = os.getenv("FFPROBE_BIN", FFMPEG_BIN.replace("ffmpeg.exe", "ffprobe.exe"))
 
